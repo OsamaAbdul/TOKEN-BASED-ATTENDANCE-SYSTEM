@@ -49,7 +49,7 @@ const AddAdmin = () => {
         try {
           setFetchLoading(true);
           setFetchError(null);
-          const response = await axios.get('http://localhost:3000/admin/get-all-admins', {
+          const response = await axios.get('https://token-based-attendance-system.onrender.com/get-all-admins', {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 5000,
             params: {
@@ -167,7 +167,7 @@ const AddAdmin = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/admin/register-user',
+        'https://token-based-attendance-system.onrender.com/admin/register-user',
         {
           adminType: formData.adminType.trim(),
           role: formData.role.trim(),
@@ -183,7 +183,7 @@ const AddAdmin = () => {
       closeModal();
       // Refresh admin list
       setCurrentPage(1);
-      const fetchResponse = await axios.get('http://localhost:3000/admin/get-all-admins', {
+      const fetchResponse = await axios.get('https://token-based-attendance-system.onrender.com/admin/get-all-admins', {
         headers: { Authorization: `Bearer ${token}` },
         params: { page: 1, limit: itemsPerPage },
       });
@@ -201,12 +201,12 @@ const AddAdmin = () => {
   const handleDeleteAdmin = async (id) => {
     if (!window.confirm('Are you sure you want to delete this admin?')) return;
     try {
-      await axios.delete(`http://localhost:3000/admin/delete/${id}`, {
+      await axios.delete(`https://token-based-attendance-system.onrender.com/admin/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Admin deleted successfully');
       // Refresh admin list
-      const fetchResponse = await axios.get('http://localhost:3000/admin/get-all-admins', {
+      const fetchResponse = await axios.get('https://token-based-attendance-system.onrender.com/admin/get-all-admins', {
         headers: { Authorization: `Bearer ${token}` },
         params: { page: currentPage, limit: itemsPerPage },
       });

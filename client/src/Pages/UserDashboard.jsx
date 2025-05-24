@@ -39,7 +39,7 @@ const StudentDashboard = () => {
       setError(null);
       try {
         // Fetch student profile
-        const profileResponse = await axios.get(`http://localhost:3000/student/${user.userId}`, {
+        const profileResponse = await axios.get(`https://token-based-attendance-system.onrender.com/student/${user.userId}`, {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 5000,
         });
@@ -48,7 +48,7 @@ const StudentDashboard = () => {
         let attendance = [];
         try {
           const attendanceResponse = await axios.get(
-            `http://localhost:3000/student/attendance-status/${user.userId}`,
+            `https://token-based-attendance-system.onrender.com/student/attendance-status/${user.userId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
               timeout: 5000,
@@ -103,7 +103,7 @@ const StudentDashboard = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        'http://localhost:3000/student/submit-attendance',
+        'https://token-based-attendance-system.onrender.com/student/submit-attendance',
         {
           user: user?.userId, // Match Attendance schema
           token: attendanceForm.token,
@@ -122,7 +122,7 @@ const StudentDashboard = () => {
       // Refresh attendance data
       try {
         const attendanceResponse = await axios.get(
-          `http://localhost:3000/student/attendance-status/${user.userId}`,
+          `https://token-based-attendance-system.onrender.com/student/attendance-status/${user.userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 5000,

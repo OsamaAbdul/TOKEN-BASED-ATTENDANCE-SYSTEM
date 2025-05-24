@@ -36,7 +36,7 @@ const Students = () => {
         try {
           setFetchLoading(true);
           setFetchError(null);
-          const response = await axios.get('http://localhost:3000/admin/get-students', {
+          const response = await axios.get('https://token-based-attendance-system.onrender.com/admin/get-students', {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 5000,
           });

@@ -47,7 +47,7 @@ const TokenList = () => {
         try {
           setFetchLoading(true);
           setFetchError(null);
-          const response = await axios.get('http://localhost:3000/admin/get-tokenlist', {
+          const response = await axios.get('https://token-based-attendance-system.onrender.com/admin/get-tokenlist', {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 5000,
             params: {
@@ -174,7 +174,7 @@ const TokenList = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/admin/generate-tokens',
+        'https://token-based-attendance-system.onrender.com/admin/generate-tokens',
         {
           courseCode: formData.courseCode.trim(),
           numberOfStudents: parseInt(formData.numberOfStudents, 10),
@@ -189,7 +189,7 @@ const TokenList = () => {
       closeModal();
       // Refresh token list
       setCurrentPage(1);
-      const fetchResponse = await axios.get('http://localhost:3000/admin/get-tokenlist', {
+      const fetchResponse = await axios.get('https://token-based-attendance-system.onrender.com/admin/get-tokenlist', {
         headers: { Authorization: `Bearer ${token}` },
         params: { page: 1, limit: itemsPerPage },
       });
@@ -207,7 +207,7 @@ const TokenList = () => {
     }
 
     try {
-      const response = await axios.delete('http://localhost:3000/admin/delete-all-tokens', {
+      const response = await axios.delete('https://token-based-attendance-system.onrender.com/admin/delete-all-tokens', {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -42,7 +42,7 @@ const StudentRegister = () => {
 
     try {
       setLoading(true);
-      await axios.post('http://localhost:3000/student/register', {
+      await axios.post('https://token-based-attendance-system.onrender.com/student/register', {
         fullname: trimmedFullname,
         matric: trimmedMatric,
         email: trimmedEmail,

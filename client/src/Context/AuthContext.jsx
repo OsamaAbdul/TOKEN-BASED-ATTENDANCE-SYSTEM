@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://token-based-attendance-system.onrender.com';
 
 const AuthContext = createContext();
 
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3000/auth/verify', {
+      const response = await axios.get(`${API_BASE_URL}/auth/verify`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
