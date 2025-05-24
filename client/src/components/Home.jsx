@@ -28,10 +28,10 @@ const Home = () => {
 
   // API endpoints for each metric
   const endpoints = {
-    totalStudents: 'http://localhost:3000/admin/get-students',
-    tokensIssued: 'http://localhost:3000/admin/get-tokenlist',
-    attendanceRate: 'http://localhost:3000/admin/get-attendance',
-    totalUsers: 'http://localhost:3000/admin/get-all-admins',
+    totalStudents: 'https://token-based-attendance-system.onrender.com/admin/get-students',
+    tokensIssued: 'https://token-based-attendance-system.onrender.com/admin/get-tokenlist',
+    attendanceRate: 'https://token-based-attendance-system.onrender.com/admin/get-attendance',
+    totalUsers: 'https://token-based-attendance-system.onrender.com/admin/get-all-admins',
   };
 
   useEffect(() => {
