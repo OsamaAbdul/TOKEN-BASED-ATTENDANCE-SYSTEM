@@ -102,6 +102,11 @@ const StudentLogin = () => {
             Register Now!
           </Link>
         </p>
+        <p className="sign-up-label">
+          <Link to="/admin/login" className="sign-up-link">
+            Login as Admin
+          </Link>
+        </p>
       </div>
       </div>
     </StyledWrapper>
