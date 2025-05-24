@@ -1,0 +1,201 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock          # Optional: Include if you use npm instead of Yarn
+package-lock.json  # Optional: Include if you use Yarn instead of npm
+
+# Build output
+dist/
+build/
+out/
+coverage/          # Test coverage reports
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*            # All environment-specific files
+
+# Logs
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# System files
+.DS_Store          # macOS system files
+Thumbs.db          # Windows thumbnail cache
+
+# IDE and editor files
+.idea/             # IntelliJ IDEA
+.vscode/           # Visual Studio Code
+*.sublime-project  # Sublime Text
+*.sublime-workspace
+*.code-workspace   # VS Code workspace
+
+# Test artifacts
+test-results/
+junit.xml
+*.lcov
+
+# Cache files
+.cache/            # Parcel, Webpack, or other build tool caches
+.eslintcache       # ESLint cache
+.stylelintcache    # Stylelint cache
+tsconfig.tsbuildinfo # TypeScript build info
+
+# Coverage and profiling
+coverage/
+*.prof             # V8 profiling data
+
+# Miscellaneous
+*.pid              # Process ID files
+*.seed             # Seed files for testing
+*.pid.lock         # Lock files
+dump.rdb           # Redis dump (if used)
+
+# Specific to frameworks (optional, depending on your stack)
+# React
+/build/            # Create React App build output
+/public/build/     # Static build output
+
+# Angular
+/dist/             # Angular build output
+/tmp/              # Temporary Angular files
+.angular/          # Angular CLI cache
+
+# Vue
+/dist/             # Vue build output
+/vuepress/         # VuePress build output
+
+# Serverless (if using serverless frameworks)
+.serverless/       # Serverless framework output
+.sls/              # Serverless framework cache
+
+# Parcel
+.parcel-cache/     # Parcel cache
+
+# Webpack
+.webpack/          # Webpack cache
+
+# TypeScript
+*.tsbuildinfo      # TypeScript build info
+
+# Optional: Dependency directories for specific use cases
+.pnp.js            # Yarn Plug'n'Play
+.pnp/              # Yarn Plug'n'Play
+
+# Optional: Ignore compiled JavaScript files (if using TypeScript/Babel)
+*.js              # Ignore compiled JS (uncomment if you only check in source TS/JS)
+*.js.map          # Source maps# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock          # Optional: Include if you use npm instead of Yarn
+package-lock.json  # Optional: Include if you use Yarn instead of npm
+
+# Build output
+dist/
+build/
+out/
+coverage/          # Test coverage reports
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*            # All environment-specific files
+
+# Logs
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# System files
+.DS_Store          # macOS system files
+Thumbs.db          # Windows thumbnail cache
+
+# IDE and editor files
+.idea/             # IntelliJ IDEA
+.vscode/           # Visual Studio Code
+*.sublime-project  # Sublime Text
+*.sublime-workspace
+*.code-workspace   # VS Code workspace
+
+# Test artifacts
+test-results/
+junit.xml
+*.lcov
+
+# Cache files
+.cache/            # Parcel, Webpack, or other build tool caches
+.eslintcache       # ESLint cache
+.stylelintcache    # Stylelint cache
+tsconfig.tsbuildinfo # TypeScript build info
+
+# Coverage and profiling
+coverage/
+*.prof             # V8 profiling data
+
+# Miscellaneous
+*.pid              # Process ID files
+*.seed             # Seed files for testing
+*.pid.lock         # Lock files
+dump.rdb           # Redis dump (if used)
+
+# Specific to frameworks (optional, depending on your stack)
+# React
+/build/            # Create React App build output
+/public/build/     # Static build output
+
+# Angular
+/dist/             # Angular build output
+/tmp/              # Temporary Angular files
+.angular/          # Angular CLI cache
+
+# Vue
+/dist/             # Vue build output
+/vuepress/         # VuePress build output
+
+# Serverless (if using serverless frameworks)
+.serverless/       # Serverless framework output
+.sls/              # Serverless framework cache
+
+# Parcel
+.parcel-cache/     # Parcel cache
+
+# Webpack
+.webpack/          # Webpack cache
+
+# TypeScript
+*.tsbuildinfo      # TypeScript build info
+
+# Optional: Dependency directories for specific use cases
+.pnp.js            # Yarn Plug'n'Play
+.pnp/              # Yarn Plug'n'Play
+
+# Optional: Ignore compiled JavaScript files (if using TypeScript/Babel)
+*.js              # Ignore compiled JS (uncomment if you only check in source TS/JS)
+*.js.map          # Source maps
