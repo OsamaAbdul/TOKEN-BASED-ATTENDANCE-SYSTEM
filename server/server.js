@@ -20,9 +20,23 @@ connectDB();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+const allowedOrigins = [
+  'https://token-based-classroom-attendance.netlify.app',
+  'http://localhost:5173', // For local development
+];
+
 app.use(cors({
-  origin: 'https://token-based-classroom-attendance.netlify.app/', 
-  credentials: true, 
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 
