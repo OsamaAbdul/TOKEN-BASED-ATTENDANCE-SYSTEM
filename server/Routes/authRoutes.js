@@ -1,6 +1,6 @@
 import express from 'express';
 import { registerStudent, studentLogin, adminLogin, getStudent, authMiddleWare, registerAdmin, getAllAdmins, deleteAdmin, getStudentById, getStudentAttendanceById } from '../controllers/userController.js';
-import { submitAttendance, generateTokens, getAttendance, tokenList, deleteAllTokens } from '../controllers/AttendanceController.js';
+import { submitAttendance, generateTokens, getAttendance, tokenList, deleteAllTokens } from '../controllers/attendanceController.js';
 import { body, validationResult } from "express-validator";
 import verify from '../controllers/authController.js';
 
