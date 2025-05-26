@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       };
 
       const id = userData.userId;
-      console.log(id);
+      console.log("the user id is: ", id);
       // Fetch student data after login
       const profileRes = await axios.get(`${API_BASE_URL}/student/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
