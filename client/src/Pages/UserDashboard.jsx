@@ -10,7 +10,7 @@ import StudentProfileCard from './StudentProfileCard';
 import AttendanceStatusCard from './AttendanceStatusCard';
 
 const StudentDashboard = () => {
-  const { user, token, loading, logout } = useAuth();
+  const { user, token, loading, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('profile');
@@ -21,15 +21,22 @@ const StudentDashboard = () => {
   });
 
   useEffect(() => {
-    if (!loading && (!user || !token)) {
-      toast.error('Please login to continue', { position: 'top-center' });
-      navigate('/student/login');
-      return;
-    }
-    if (!loading && user?.role !== 'student') {
-      toast.error('Only students can access this dashboard', { position: 'top-center' });
-      navigate('/student/login');
-      return;
+    if (!loading) {
+      if (!user || !token) {
+        toast.error('Please login to continue', { position: 'top-center' });
+        navigate('/student/login');
+        return;
+      }
+      if (user?.role !== 'student') {
+        toast.error('Only students can access this dashboard', { position: 'top-center' });
+        navigate('/student/login');
+        return;
+      }
+      if (!user.studentData) {
+        toast.error('Failed to load student data', { position: 'top-center' });
+        navigate('/student/login');
+        return;
+      }
     }
   }, [user, token, loading, navigate]);
 
@@ -39,7 +46,7 @@ const StudentDashboard = () => {
       const response = await axios.post(
         'https://token-based-attendance-system.onrender.com/student/submit-attendance',
         {
-          user: user?.userId,
+          user: user?.id, // Use normalized id from AuthContext
           token: attendanceForm.token,
           courseCode: attendanceForm.courseCode,
           date: attendanceForm.date,
@@ -55,30 +62,20 @@ const StudentDashboard = () => {
 
       // Refresh attendance
       const res = await axios.get(
-        `https://token-based-attendance-system.onrender.com/student/attendance-status/${user.userId}`,
+        `https://token-based-attendance-system.onrender.com/student/attendance-status/${user.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser((prev) => ({
-        ...prev,
+      const newAttendance = res.data.status === 'success' ? res.data.data.attendance : [];
+      updateUser({
+        ...user,
         studentData: {
-          ...prev.studentData,
-          attendance: res.data.status === 'success' ? res.data.data.attendance : [],
+          ...user.studentData,
+          attendance: newAttendance,
         },
-      }));
-      localStorage.setItem(
-        'user',
-        JSON.stringify({
-          ...user,
-          studentData: {
-            ...user.studentData,
-            attendance: res.data.status === 'success' ? res.data.data.attendance : [],
-          },
-        })
-      );
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to submit attendance', {
-        position: 'top-center',
       });
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to submit attendance';
+      toast.error(message, { position: 'top-center' });
     }
   };
 
