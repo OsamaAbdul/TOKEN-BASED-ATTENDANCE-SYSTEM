@@ -102,10 +102,12 @@ export const AuthProvider = ({ children }) => {
       const { token, user: userData } = res.data;
       if (!userData || !userData.role) {
         throw new Error('Invalid user data in login response');
-      }
+      };
 
+      const id = userData.userId;
+      console.log(id);
       // Fetch student data after login
-      const profileRes = await axios.get(`${API_BASE_URL}/student/${userData.userId}`, {
+      const profileRes = await axios.get(`${API_BASE_URL}/student/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
