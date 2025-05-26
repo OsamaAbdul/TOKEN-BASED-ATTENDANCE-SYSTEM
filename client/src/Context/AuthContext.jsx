@@ -1,3 +1,4 @@
+// AuthContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +14,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Verify user on mount or token change
   const verifyUser = useCallback(async () => {
     if (!token) {
       console.log('No token found, clearing user');
@@ -28,19 +28,48 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
- 
-      // Handle different response structures
       const userData = response.data.user || response.data.userData || response.data;
       if (!userData || !userData.role) {
         throw new Error('Invalid user data in response');
       }
-      setUser(userData);
+
+      let studentData = null;
+      if (userData.role === 'student') {
+        // Fetch student profile
+        const profileRes = await axios.get(`${API_BASE_URL}/student/${userData.userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 5000,
+        });
+
+        // Fetch attendance
+        let attendance = [];
+        try {
+          const attendanceRes = await axios.get(
+            `${API_BASE_URL}/student/attendance-status/${userData.userId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 5000,
+            }
+          );
+          if (attendanceRes.data.status === 'success') {
+            attendance = attendanceRes.data.data.attendance;
+          }
+        } catch (err) {
+          if (err.response?.status !== 404) throw err;
+        }
+
+        studentData = { ...profileRes.data.data, attendance };
+      }
+
+      setUser({ ...userData, studentData });
+      localStorage.setItem('user', JSON.stringify({ ...userData, studentData }));
     } catch (error) {
-      
+      console.error('Verify user error:', error);
       const redirectPath = user?.role === 'admin' ? '/admin/login' : '/student/login';
       setUser(null);
       setToken('');
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
       toast.error(error.response?.data?.errorMessage || 'Session expired. Please log in again.');
       navigate(redirectPath);
     } finally {
@@ -49,11 +78,15 @@ export const AuthProvider = ({ children }) => {
   }, [token, user?.role]);
 
   useEffect(() => {
-    
+    // Try to load user from localStorage first for faster initial render
+    const storedUser = localStorage.getItem('user');
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
+      setLoading(false); // Allow rendering with cached data
+    }
     verifyUser();
-  }, [verifyUser]);
+  }, [verifyUser, token]);
 
-  // Set Authorization header on token change
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -62,19 +95,42 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  // Student Login
   const studentLogin = async (matric, password) => {
     try {
       setLoading(true);
       const res = await axios.post(`${API_BASE_URL}/student/login`, { matric, password });
-
       const { token, user: userData } = res.data;
       if (!userData || !userData.role) {
         throw new Error('Invalid user data in login response');
       }
+
+      // Fetch student data after login
+      const profileRes = await axios.get(`${API_BASE_URL}/student/${userData.userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000,
+      });
+
+      let attendance = [];
+      try {
+        const attendanceRes = await axios.get(
+          `${API_BASE_URL}/student/attendance-status/${userData.userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 5000,
+          }
+        );
+        if (attendanceRes.data.status === 'success') {
+          attendance = attendanceRes.data.data.attendance;
+        }
+      } catch (err) {
+        if (err.response?.status !== 404) throw err;
+      }
+
+      const studentData = { ...profileRes.data.data, attendance };
       setToken(token);
-      setUser(userData);
+      setUser({ ...userData, studentData });
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify({ ...userData, studentData }));
       toast.success('Login successful!');
       navigate('/student/dashboard');
     } catch (error) {
@@ -87,7 +143,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Admin Login
   const adminLogin = async (email, password) => {
     try {
       setLoading(true);
@@ -99,6 +154,7 @@ export const AuthProvider = ({ children }) => {
       setToken(token);
       setUser(userData);
       localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
       toast.success('Login successful!');
       navigate('/admin/dashboard');
     } catch (error) {
@@ -111,17 +167,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout
   const logout = useCallback(() => {
     setToken('');
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     delete axios.defaults.headers.common['Authorization'];
     toast.info('Logged out successfully');
     navigate('/student/login');
   }, [navigate]);
 
-  // Check if user is admin
   const isAdmin = useCallback(() => {
     const admin = user?.role === 'admin';
     console.log('isAdmin check:', admin, 'User:', user);

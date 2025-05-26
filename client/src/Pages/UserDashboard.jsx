@@ -1,3 +1,4 @@
+// StudentDashboard.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -9,13 +10,10 @@ import StudentProfileCard from './StudentProfileCard';
 import AttendanceStatusCard from './AttendanceStatusCard';
 
 const StudentDashboard = () => {
-  const { user, token, logout } = useAuth();
+  const { user, token, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('profile');
-  const [studentData, setStudentData] = useState(null);
-  const [loading, setLoading] = useState(true); // changed to true
-  const [error, setError] = useState(null);
   const [attendanceForm, setAttendanceForm] = useState({
     token: '',
     courseCode: '',
@@ -23,67 +21,17 @@ const StudentDashboard = () => {
   });
 
   useEffect(() => {
-    if (!user || !token) {
+    if (!loading && (!user || !token)) {
       toast.error('Please login to continue', { position: 'top-center' });
       navigate('/student/login');
       return;
     }
-    if (user.role !== 'student') {
+    if (!loading && user?.role !== 'student') {
       toast.error('Only students can access this dashboard', { position: 'top-center' });
       navigate('/student/login');
       return;
     }
-
-    const fetchStudentData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const profileRes = await axios.get(
-          `https://token-based-attendance-system.onrender.com/student/${user.userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 5000,
-          }
-        );
-
-        let attendance = [];
-        try {
-          const attendanceRes = await axios.get(
-            `https://token-based-attendance-system.onrender.com/student/attendance-status/${user.userId}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              timeout: 5000,
-            }
-          );
-          if (attendanceRes.data.status === 'success') {
-            attendance = attendanceRes.data.data.attendance;
-          }
-        } catch (err) {
-          if (err.response?.status !== 404) throw err;
-        }
-
-        setStudentData({
-          ...profileRes.data.data,
-          attendance,
-        });
-      } catch (err) {
-        const status = err.response?.status;
-        let message = 'Failed to fetch student data.';
-        if (status === 404) message = 'Student profile not found.';
-        if (status === 401) {
-          toast.error('Session expired. Please log in again.', { position: 'top-center' });
-          navigate('/student/login');
-          return;
-        }
-        setError(message);
-        toast.warn(message, { position: 'top-center' });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudentData();
-  }, [user, token, navigate]);
+  }, [user, token, loading, navigate]);
 
   const handleAttendanceSubmit = async (e) => {
     e.preventDefault();
@@ -110,10 +58,23 @@ const StudentDashboard = () => {
         `https://token-based-attendance-system.onrender.com/student/attendance-status/${user.userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setStudentData((prev) => ({
+      setUser((prev) => ({
         ...prev,
-        attendance: res.data.status === 'success' ? res.data.data.attendance : [],
+        studentData: {
+          ...prev.studentData,
+          attendance: res.data.status === 'success' ? res.data.data.attendance : [],
+        },
       }));
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          ...user,
+          studentData: {
+            ...user.studentData,
+            attendance: res.data.status === 'success' ? res.data.data.attendance : [],
+          },
+        })
+      );
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit attendance', {
         position: 'top-center',
@@ -128,8 +89,6 @@ const StudentDashboard = () => {
 
   const handleLogout = () => {
     logout();
-    toast.info('Logging out...', { position: 'top-center' });
-    setTimeout(() => navigate('/student/login'), 1000);
     if (isSidebarOpen) setIsSidebarOpen(false);
   };
 
@@ -147,16 +106,15 @@ const StudentDashboard = () => {
       );
     }
 
-    if (error) {
-      return <div className="text-red-500 text-center">{error}</div>;
+    if (!user?.studentData) {
+      return <div className="text-red-500 text-center">Failed to load student data.</div>;
     }
 
     if (activeSection === 'profile') {
-      if (!studentData) return <div className="text-center text-gray-600">Loading profile...</div>;
       return (
         <div className="flex flex-col sm:flex-row gap-6">
-          <StudentProfileCard studentData={studentData} />
-          <AttendanceStatusCard studentData={studentData} />
+          <StudentProfileCard studentData={user.studentData} />
+          <AttendanceStatusCard studentData={user.studentData} />
         </div>
       );
     }
@@ -223,7 +181,6 @@ const StudentDashboard = () => {
     <div className="min-h-screen bg-gray-100">
       <ToastContainer position="top-center" autoClose={3000} theme="colored" />
       <div className="flex">
-        {/* Sidebar */}
         <div
           className={`text-white h-screen fixed top-0 left-0 bottom-0 transition-all duration-300 z-20 ${
             isSidebarOpen ? 'w-64' : 'w-0 -left-64'
