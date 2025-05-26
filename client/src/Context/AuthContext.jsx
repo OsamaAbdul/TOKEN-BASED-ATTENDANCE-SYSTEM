@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 5000,
         });
-
+        console.log("user id is :", userData.userId)
         // Fetch attendance
         let attendance = [];
         try {
