@@ -27,6 +27,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`${API_BASE_URL}/auth/verify`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Verify API response:', response.data);
 
       const userData = response.data.user || response.data.userData || response.data;
       if (!userData || !userData.role) {
@@ -35,17 +36,21 @@ export const AuthProvider = ({ children }) => {
 
       let studentData = null;
       if (userData.role === 'student') {
-        // Fetch student profile
-        const profileRes = await axios.get(`${API_BASE_URL}/student/${userData.userId}`, {
+        const id = userData.userId || userData.id || userData._id;
+        if (!id) {
+          throw new Error('User ID is missing in verify response');
+        }
+        console.log('verifyUser user id:', id);
+
+        const profileRes = await axios.get(`${API_BASE_URL}/student/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 5000,
         });
-        console.log("user id is :", userData.userId)
-        // Fetch attendance
+
         let attendance = [];
         try {
           const attendanceRes = await axios.get(
-            `${API_BASE_URL}/student/attendance-status/${userData.userId}`,
+            `${API_BASE_URL}/student/attendance-status/${id}`,
             {
               headers: { Authorization: `Bearer ${token}` },
               timeout: 5000,
@@ -61,30 +66,40 @@ export const AuthProvider = ({ children }) => {
         studentData = { ...profileRes.data.data, attendance };
       }
 
-      setUser({ ...userData, studentData });
-      localStorage.setItem('user', JSON.stringify({ ...userData, studentData }));
+      const normalizedUserData = {
+        ...userData,
+        id: userData.userId || userData.id || userData._id, // Normalize ID
+        studentData,
+      };
+      setUser(normalizedUserData);
+      localStorage.setItem('user', JSON.stringify(normalizedUserData));
+      localStorage.setItem('userTimestamp', Date.now().toString());
     } catch (error) {
-      console.error('Verify user error:', error);
+      console.error('Verify user error:', error.message);
       const redirectPath = user?.role === 'admin' ? '/admin/login' : '/student/login';
       setUser(null);
       setToken('');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('userTimestamp');
       toast.error(error.response?.data?.errorMessage || 'Session expired. Please log in again.');
       navigate(redirectPath);
     } finally {
       setLoading(false);
     }
-  }, [token, user?.role]);
+  }, [token, user?.role, navigate]);
 
   useEffect(() => {
-    // Try to load user from localStorage first for faster initial render
     const storedUser = localStorage.getItem('user');
-    if (storedUser && token) {
+    const storedTimestamp = localStorage.getItem('userTimestamp');
+    const cacheDuration = 60 * 60 * 1000; // 1 hour
+
+    if (storedUser && storedTimestamp && token && Date.now() - parseInt(storedTimestamp) < cacheDuration) {
       setUser(JSON.parse(storedUser));
-      setLoading(false); // Allow rendering with cached data
+      setLoading(false);
+    } else {
+      verifyUser();
     }
-    verifyUser();
   }, [verifyUser, token]);
 
   useEffect(() => {
@@ -99,14 +114,18 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await axios.post(`${API_BASE_URL}/student/login`, { matric, password });
+      console.log('Login API response:', res.data);
       const { token, user: userData } = res.data;
       if (!userData || !userData.role) {
         throw new Error('Invalid user data in login response');
-      };
+      }
 
-      const id = userData.userId;
-      console.log("the user id is: ", id);
-      // Fetch student data after login
+      const id = userData.id || userData.userId || userData._id;
+      console.log('the user id is: ', id);
+      if (!id) {
+        throw new Error('User ID is missing in login response');
+      }
+
       const profileRes = await axios.get(`${API_BASE_URL}/student/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
@@ -115,7 +134,7 @@ export const AuthProvider = ({ children }) => {
       let attendance = [];
       try {
         const attendanceRes = await axios.get(
-          `${API_BASE_URL}/student/attendance-status/${userData.userId}`,
+          `${API_BASE_URL}/student/attendance-status/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
             timeout: 5000,
@@ -129,10 +148,16 @@ export const AuthProvider = ({ children }) => {
       }
 
       const studentData = { ...profileRes.data.data, attendance };
+      const normalizedUserData = {
+        ...userData,
+        id: userData.id || userData.userId || userData._id, // Normalize ID
+        studentData,
+      };
       setToken(token);
-      setUser({ ...userData, studentData });
+      setUser(normalizedUserData);
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify({ ...userData, studentData }));
+      localStorage.setItem('user', JSON.stringify(normalizedUserData));
+      localStorage.setItem('userTimestamp', Date.now().toString());
       toast.success('Login successful!');
       navigate('/student/dashboard');
     } catch (error) {
@@ -149,14 +174,20 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await axios.post(`${API_BASE_URL}/auth/admin/login`, { email, password });
+      console.log('Admin login API response:', res.data);
       const { token, user: userData } = res.data;
       if (!userData || !userData.role) {
         throw new Error('Invalid user data in login response');
       }
+      const normalizedUserData = {
+        ...userData,
+        id: userData.id || userData.userId || userData._id, // Normalize ID
+      };
       setToken(token);
-      setUser(userData);
+      setUser(normalizedUserData);
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(normalizedUserData));
+      localStorage.setItem('userTimestamp', Date.now().toString());
       toast.success('Login successful!');
       navigate('/admin/dashboard');
     } catch (error) {
@@ -169,11 +200,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = useCallback((newUserData) => {
+    const normalizedUserData = {
+      ...newUserData,
+      id: newUserData.id || newUserData.userId || newUserData._id, // Normalize ID
+    };
+    setUser(normalizedUserData);
+    localStorage.setItem('user', JSON.stringify(normalizedUserData));
+    localStorage.setItem('userTimestamp', Date.now().toString());
+  }, []);
+
   const logout = useCallback(() => {
     setToken('');
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('userTimestamp');
     delete axios.defaults.headers.common['Authorization'];
     toast.info('Logged out successfully');
     navigate('/student/login');
@@ -187,7 +229,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, studentLogin, adminLogin, logout, isAdmin, loading }}
+      value={{ user, token, studentLogin, adminLogin, logout, isAdmin, loading, updateUser }}
     >
       {children}
     </AuthContext.Provider>
